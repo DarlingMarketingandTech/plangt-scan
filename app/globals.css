@@ -1,0 +1,10 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --color-brand-primary: #2D4F1E;
+  --color-brand-secondary: #4A7C44;
+  --color-brand-muted: #8A9B8A;
+  --color-brand-border: #D1D9CD;
+  --color-brand-bg: #F7F9F5;
+}

@@ -1,0 +1,10 @@
+{
+  "name": "FloraScan",
+  "description": "AI-powered plant scanner for identifying native species, diagnosing diseases, and managing garden health with personalized care schedules.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

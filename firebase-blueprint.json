@@ -1,0 +1,45 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" }
+      },
+      "required": ["uid", "email"]
+    },
+    "Plant": {
+      "title": "Plant",
+      "description": "A plant in the user's garden",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "commonName": { "type": "string" },
+        "scientificName": { "type": "string" },
+        "nativeStatus": { "type": "string" },
+        "addedAt": { "type": "string", "format": "date-time" },
+        "lastWateredAt": { "type": "string", "format": "date-time" },
+        "photoUrl": { "type": "string" },
+        "wateringIntervalDays": { "type": "integer" },
+        "description": { "type": "string" },
+        "careTips": { "type": "string" }
+      },
+      "required": ["ownerId", "commonName"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profile documents"
+    },
+    "plants/{plantId}": {
+      "schema": "Plant",
+      "description": "Collection of plants managed by users"
+    }
+  }
+}
