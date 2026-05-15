@@ -24,7 +24,15 @@ interface Plant {
   wateringIntervalDays: number;
   description: string;
   careTips: string;
+  careDetails?: {
+    light?: string;
+    soil?: string;
+    watering?: string;
+    temperature?: string;
+    maintenance?: string;
+  };
   notes?: string;
+  confidence?: number;
 }
 
 export default function Dashboard() {
@@ -82,7 +90,9 @@ export default function Dashboard() {
         nativeStatus: result.nativeStatus,
         description: result.description,
         careTips: result.careTips,
+        careDetails: result.careDetails || null,
         notes: result.notes || '',
+        confidence: result.confidence || null,
         wateringIntervalDays: result.wateringIntervalDays || 7,
         photoUrl: capturedPhoto,
         addedAt: serverTimestamp(),

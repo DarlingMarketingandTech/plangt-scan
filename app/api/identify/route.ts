@@ -14,8 +14,16 @@ export async function POST(req: NextRequest) {
       "scientificName": "string",
       "nativeStatus": "Native" | "Invasive" | "Naturalized",
       "description": "string",
-      "careTips": "string",
-      "wateringIntervalDays": number (e.g. 7)
+      "careTips": "A concise summary of care",
+      "careDetails": {
+        "light": "Specify light requirements (e.g., Full sun, Part shade)",
+        "soil": "Best soil type and drainage",
+        "watering": "Specific watering instructions",
+        "temperature": "Ideal temperature range",
+        "maintenance": "Key pruning or upkeep tips"
+      },
+      "wateringIntervalDays": number (e.g. 7),
+      "confidence": number (0-1)
     }`;
 
     const imageData = image.split(',')[1];

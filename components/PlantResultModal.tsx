@@ -10,6 +10,13 @@ interface AnalysisResult {
   nativeStatus?: string;
   description?: string;
   careTips?: string;
+  careDetails?: {
+    light?: string;
+    soil?: string;
+    watering?: string;
+    temperature?: string;
+    maintenance?: string;
+  };
   wateringIntervalDays?: number;
   isHealthy?: boolean;
   diagnosis?: string;
@@ -17,6 +24,7 @@ interface AnalysisResult {
   urgency?: string;
   isDiagnosis?: boolean;
   notes?: string;
+  confidence?: number;
 }
 
 interface PlantResultModalProps {
@@ -72,6 +80,20 @@ export function PlantResultModal({ result, photoUrl, onSave, onClose, isSaving }
           <div className="flex justify-between items-center mb-12">
             <div className="space-y-1">
               <h3 className="text-[10px] font-bold text-[#8A9B8A] uppercase tracking-[0.3em]">Classification Report</h3>
+              {result.confidence !== undefined && (
+                <div className="flex items-center gap-2">
+                  <div className="w-24 h-1 bg-[#F0F4EF] rounded-full overflow-hidden shrink-0">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: `${result.confidence * 100}%` }}
+                      className="h-full bg-green-500"
+                    />
+                  </div>
+                  <span className="text-[9px] font-bold text-[#8A9B8A] uppercase tracking-widest">
+                    {(result.confidence * 100).toFixed(0)}% Confidence
+                  </span>
+                </div>
+              )}
             </div>
             <motion.button 
               onClick={onClose} 
@@ -105,8 +127,19 @@ export function PlantResultModal({ result, photoUrl, onSave, onClose, isSaving }
                     <Leaf className="w-4 h-4 opacity-40" />
                     <h4 className="text-[10px] font-bold uppercase tracking-[0.2em]">Stewardship</h4>
                   </div>
-                  <div className="bg-white border border-[#D1D9CD]/30 p-8 rounded-[3rem] shadow-sm">
+                  <div className="bg-white border border-[#D1D9CD]/30 p-8 rounded-[3rem] shadow-sm space-y-6">
                     <p className="text-sm text-[#5C6B5C] leading-relaxed opacity-80">{result.careTips}</p>
+                    
+                    {result.careDetails && (
+                      <div className="grid grid-cols-2 gap-4 pt-4 border-t border-[#F0F4EF]">
+                        {Object.entries(result.careDetails).map(([key, value]) => (
+                          <div key={key} className="space-y-1">
+                            <h5 className="text-[8px] font-bold text-[#8A9B8A] uppercase tracking-widest">{key}</h5>
+                            <p className="text-[10px] text-[#2D4F1E] font-medium leading-tight">{value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </section>
 
