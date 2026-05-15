@@ -1,16 +1,28 @@
-import type {Metadata} from 'next';
+import type { Metadata } from 'next';
+import { Inter, Cormorant_Garamond } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/lib/auth-context';
 
+const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
+const cormorant = Cormorant_Garamond({ 
+  subsets: ['latin'], 
+  weight: ['300', '400', '500', '600', '700'],
+  variable: '--font-serif' 
+});
+
 export const metadata: Metadata = {
-  title: 'FloraScan - AI Garden Assistant',
-  description: 'Identify plants, diagnose diseases, and track your garden health with AI.',
+  title: 'RootsAI | Native Garden Intelligence',
+  description: 'AI-powered native species identification and health diagnostics.',
 };
 
-export default function RootLayout({children}: {children: React.ReactNode}) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning className="bg-[#F7F9F5] text-[#1A2E1A] font-sans">
+      <body className={`${inter.variable} ${cormorant.variable} font-sans antialiased text-[#2D4F1E]`}>
         <AuthProvider>
           {children}
         </AuthProvider>

@@ -1,24 +1,43 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} { allow read, write: if false; }
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
 
-    function isSignedIn() { return request.auth != null; }
-    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
-    function incoming() { return request.resource.data; }
-    function existing() { return resource.data; }
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email']) &&
+             data.uid is string &&
+             data.email is string;
+    }
+
+    function isValidPlant(data) {
+      return data.keys().hasAll(['ownerId', 'commonName']) &&
+             data.ownerId is string &&
+             data.commonName is string &&
+             data.commonName.size() <= 200 &&
+             (!data.keys().contains('notes') || (data.notes is string && data.notes.size() <= 2000));
+    }
 
     match /users/{userId} {
       allow get: if isOwner(userId);
-      allow create: if isOwner(userId) && incoming().uid == userId;
-      allow update: if isOwner(userId);
+      allow create, update: if isOwner(userId) && isValidUser(request.resource.data);
     }
 
     match /plants/{plantId} {
-      allow read: if isSignedIn() && existing().ownerId == request.auth.uid;
-      allow create: if isSignedIn() && incoming().ownerId == request.auth.uid;
-      allow update: if isSignedIn() && existing().ownerId == request.auth.uid;
-      allow delete: if isSignedIn() && existing().ownerId == request.auth.uid;
+      allow read: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid && isValidPlant(request.resource.data);
+      allow update: if isSignedIn() && resource.data.ownerId == request.auth.uid && request.resource.data.ownerId == request.auth.uid && isValidPlant(request.resource.data);
+      allow delete: if isSignedIn() && resource.data.ownerId == request.auth.uid;
     }
   }
 }

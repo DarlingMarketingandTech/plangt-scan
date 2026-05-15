@@ -1,40 +1,43 @@
-import { ai, MODEL_NAME } from "@/lib/gemini";
+import { GoogleGenAI } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
-import { Type } from "@google/genai";
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
 export async function POST(req: NextRequest) {
   try {
     const { image, plantName } = await req.json();
-    if (!image) return NextResponse.json({ error: "Image data is required" }, { status: 400 });
+    if (!image) return NextResponse.json({ error: "No image provided" }, { status: 400 });
 
-    const base64Data = image.split(",")[1] || image;
+    const prompt = `Diagnose the health of this ${plantName || 'plant'}. Provide the result in JSON format:
+    {
+      "isHealthy": boolean,
+      "diagnosis": "string",
+      "confidence": number (0-1),
+      "treatment": "string",
+      "urgency": "low" | "medium" | "high"
+    }`;
 
+    const imageData = image.split(',')[1];
     const response = await ai.models.generateContent({
-      model: MODEL_NAME,
-      contents: {
-        parts: [
-          { inlineData: { mimeType: "image/jpeg", data: base64Data } },
-          { text: `Analyze the health of this ${plantName || 'plant'}. Look for diseases, pests, or deficiencies. Provide status (healthy, warning, critical), diagnosis description, specific pest alerts, and recommendations. Return solely as a JSON object.` }
-        ]
-      },
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            status: { type: Type.STRING },
-            diagnosis: { type: Type.STRING },
-            pestAlert: { type: Type.STRING },
-            recommendations: { type: Type.STRING }
-          },
-          required: ["status", "diagnosis", "recommendations"]
+      model: "gemini-3-flash-preview",
+      contents: [
+        { text: prompt },
+        { 
+          inlineData: {
+            data: imageData,
+            mimeType: "image/jpeg"
+          }
         }
-      }
+      ]
     });
 
-    return NextResponse.json(JSON.parse(response.text || "{}"));
-  } catch (error) {
-    console.error("Diagnose API Error:", error);
-    return NextResponse.json({ error: "Failed to diagnose" }, { status: 500 });
+    const text = response.text;
+    if (!text) throw new Error("No response from AI");
+    
+    const jsonStr = text.replace(/```json|```/g, "").trim();
+    return NextResponse.json(JSON.parse(jsonStr));
+  } catch (error: any) {
+    console.error("Diagnose API error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

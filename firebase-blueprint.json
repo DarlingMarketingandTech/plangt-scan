@@ -27,7 +27,8 @@
         "photoUrl": { "type": "string" },
         "wateringIntervalDays": { "type": "integer" },
         "description": { "type": "string" },
-        "careTips": { "type": "string" }
+        "careTips": { "type": "string" },
+        "notes": { "type": "string" }
       },
       "required": ["ownerId", "commonName"]
     }

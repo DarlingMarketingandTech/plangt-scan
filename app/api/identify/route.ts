@@ -1,42 +1,44 @@
-import { ai, MODEL_NAME } from "@/lib/gemini";
+import { GoogleGenAI } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
-import { Type } from "@google/genai";
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
 
 export async function POST(req: NextRequest) {
   try {
     const { image } = await req.json();
-    if (!image) return NextResponse.json({ error: "Image data is required" }, { status: 400 });
+    if (!image) return NextResponse.json({ error: "No image provided" }, { status: 400 });
 
-    const base64Data = image.split(",")[1] || image;
+    const prompt = `Identify this plant. Provide the result in JSON format:
+    {
+      "commonName": "string",
+      "scientificName": "string",
+      "nativeStatus": "Native" | "Invasive" | "Naturalized",
+      "description": "string",
+      "careTips": "string",
+      "wateringIntervalDays": number (e.g. 7)
+    }`;
 
+    const imageData = image.split(',')[1];
     const response = await ai.models.generateContent({
-      model: MODEL_NAME,
-      contents: {
-        parts: [
-          { inlineData: { mimeType: "image/jpeg", data: base64Data } },
-          { text: "Identify this plant. Provide its common name, scientific name, native status (e.g. Native, Invasive, Introduced), a brief description, and basic care tips. Also suggest a watering interval in days (integer). Return solely as a JSON object." }
-        ]
-      },
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            commonName: { type: Type.STRING },
-            scientificName: { type: Type.STRING },
-            nativeStatus: { type: Type.STRING },
-            description: { type: Type.STRING },
-            careTips: { type: Type.STRING },
-            wateringIntervalDays: { type: Type.INTEGER }
-          },
-          required: ["commonName", "scientificName", "description", "careTips", "wateringIntervalDays"]
+      model: "gemini-3-flash-preview",
+      contents: [
+        { text: prompt },
+        { 
+          inlineData: {
+            data: imageData,
+            mimeType: "image/jpeg"
+          }
         }
-      }
+      ]
     });
 
-    return NextResponse.json(JSON.parse(response.text || "{}"));
-  } catch (error) {
-    console.error("Identify API Error:", error);
-    return NextResponse.json({ error: "Failed to identify plant" }, { status: 500 });
+    const text = response.text;
+    if (!text) throw new Error("No response from AI");
+    
+    const jsonStr = text.replace(/```json|```/g, "").trim();
+    return NextResponse.json(JSON.parse(jsonStr));
+  } catch (error: any) {
+    console.error("Identify API error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
